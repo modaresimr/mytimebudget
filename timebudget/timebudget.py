@@ -92,11 +92,11 @@ class TimeBudgetRecorder():
     This is mostly used through annotation and with-block helpers.
     """
 
-    def __init__(self, quiet_mode:bool=False, show_all_stats:bool=False):
+    def __init__(self, quiet_mode:bool=False, show_all_stats:bool=False, outstream=sys.stdout):
         self.quiet_mode = quiet_mode
         self.show_all_stats = show_all_stats
         self.reset()
-        self.out_stream = sys.stdout
+        self.out_stream = outstream
 
     def reset(self):
         """Clear all stats collected so far.
@@ -105,9 +105,12 @@ class TimeBudgetRecorder():
         self.stats = defaultdict(OnlineMeter)  # float defaults to 0
 
     def _print(self, msg:str):
-        self.out_stream.write(msg)
-        self.out_stream.write("\n")
-        self.out_stream.flush()
+        if isinstance(self.out_stream,logging.Logger):
+            self.out_stream.debug(msg)
+        else:
+            self.out_stream.write(msg)
+            self.out_stream.write("\n")
+            self.out_stream.flush()
 
     def start(self, block_name:str):
         assert block_name not in self.start_times, f"timebudget.start({block_name}) without end"
